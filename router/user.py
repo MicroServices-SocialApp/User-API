@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, status
 from db import db_user
 from sqlalchemy.ext.asyncio.session import AsyncSession
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/user", tags=["user"])
     response_description="Succes de la reponse",
     responses={
         201: {
-            "description": "Created - User has been created",
+            "description": "SUCCESS - User has been created",
             "content": {
                 "application/json": {
                     "example": {
@@ -41,12 +42,12 @@ async def create(request: UserModel, db: AsyncSession = Depends(get_async_db)):
     name='User_read_by_username',
     summary="une phrase qui resume la fonction.",
     description="une decription longue et precise?",
-    response_model=UserDisplay,
+    response_model=List[UserDisplay],
     status_code=status.HTTP_200_OK,
     response_description="Succes de la reponse",
     responses={
         200: {
-            "description": "Found - User has been Found",
+            "description": "SUCCESS - User has been Found",
             "content": {
                 "application/json": {
                     "example": {
@@ -61,6 +62,37 @@ async def read_user_by_username(username: str, db: AsyncSession = Depends(get_as
     user = await db_user.read_user_by_username(username, db)
     return user
 
+
+#--------------------------------------------------------------------------
+
+
+@router.get(
+    "/read_all_users",
+    deprecated=False,
+    name='User_read_all',
+    summary="une phrase qui resume la fonction.",
+    description="une decription longue et precise?",
+    response_model=List[UserDisplay],
+    status_code=status.HTTP_200_OK,
+    response_description="Succes de la reponse",
+    responses={
+        200: {
+            "description": "SUCCESS - User has been Found",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Users has been succefully found in the database."
+                    }
+                }
+            }
+        }
+    }
+)
+async def read_all_users(db: AsyncSession = Depends(get_async_db)):
+    user = await db_user.read_all_users(db)
+    return user
+
+
 #--------------------------------------------------------------------------
 
 @router.put(
@@ -74,7 +106,7 @@ async def read_user_by_username(username: str, db: AsyncSession = Depends(get_as
     response_description="Succes de la reponse",
     responses={
         200: {
-            "description": "Updated - User has been Updated",
+            "description": "SUCCESS - User has been Updated",
             "content": {
                 "application/json": {
                     "example": {
@@ -102,11 +134,21 @@ async def update(id: int, request: UserModel, db: AsyncSession = Depends(get_asy
     response_description="Succes de la reponse",
     responses={
         204: {
-            "description": "Delete - User has been delete",
+            "description": "SUCCESS - User has been delete",
             "content": {
                 "application/json": {
                     "example": {
                         "detail": "User has been succefully delete from the database."
+                    }
+                }
+            }
+        },
+        500: {
+            "description": "SQLAlchemyError - User FAILED to be deleted!",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Error - User has FAILED to be delete from the database."
                     }
                 }
             }
