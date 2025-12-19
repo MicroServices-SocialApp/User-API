@@ -41,7 +41,18 @@ async def read_user_by_username(
 ):
     query = select(DbUser).where(DbUser.username == username)
     result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    user = result.scalars().all()
+    return user
+
+# --------------------------------------------------------------------------
+
+
+async def read_all_users(
+    db: AsyncSession = Depends(get_async_db)
+):
+    query = select(DbUser)
+    result = await db.execute(query)
+    user = result.scalars().all()
     return user
 
 
