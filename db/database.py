@@ -9,12 +9,12 @@ from sqlalchemy.orm import declarative_base
 # ------------------------------------------------------------------------------------
 
 load_dotenv()
-DB_URL: str | None = os.getenv("DB_URL")
+DB_URL: str | None = os.getenv("DATABASE_URL")
 
 # ------------------------------------------------------------------------------------
 
 logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
-engine: AsyncEngine = create_async_engine(f"{DB_URL}", echo=False)
+engine: AsyncEngine = create_async_engine(DB_URL, echo=False)
 
 # ------------------------------------------------------------------------------------
 
