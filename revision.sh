@@ -13,6 +13,6 @@ if ! grep -q "DB_URL" .env; then
     exit 1
 fi
 echo \n"------going to revision --------"\n
-alembic revision --autogenerate -m "First migration"
+alembic revision --autogenerate -m "changed timezone to True"
 
 echo \n"Database revision complete."\n

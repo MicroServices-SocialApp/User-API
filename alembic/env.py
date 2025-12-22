@@ -15,7 +15,9 @@ load_dotenv()  # This loads the variables from .env into os.environ
 # access to the values within the .ini file in use.
 config = context.config
 
-DB_URL = os.getenv("DB_URL")
+DB_URL = os.getenv("DATABASE_URL") # DB_URL for local setup, DATABASE_URL for Docker
+if not DB_URL:
+    raise ValueError("CRITICAL: DATABASE_URL environment variable is required.")
 config.set_main_option("sqlalchemy.url", DB_URL)
 
 # Interpret the config file for Python logging.
