@@ -1,30 +1,33 @@
-# 1. Base Image: Use a lightweight Python version
-FROM python:3.13-slim
-
-# 2. Environment Variables
-# Prevents Python from writing .pyc files and ensures logs are visible immediately
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# 3. Work Directory inside the container
-WORKDIR /app
-
-# 4. Install System Dependencies
-# gcc is required to build asyncpg's Python extensions
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# 5. Install Python Dependencies
-# Copy requirements first to leverage Docker caching
-COPY req/requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-# 6. Copy the Application Code
-COPY . .
-
-# 7. Expose the internal port
-EXPOSE 8000
-
-# 8. Start the Application
-CMD python db/wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000
+# --- Stage 1: Builder ---
+    FROM python:3.13-slim AS builder
+    
+    WORKDIR /app
+    
+    # Install build dependencies
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+        gcc \
+        python3-dev \
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Install requirements to a local directory
+    COPY req/requirements.txt .
+    RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+    
+    # --- Stage 2: Final ---
+    FROM python:3.13-slim
+    
+    ENV PYTHONDONTWRITEBYTECODE=1
+    ENV PYTHONUNBUFFERED=1
+    
+    WORKDIR /app
+    
+    # Copy only the installed packages from the builder stage
+    COPY --from=builder /install /usr/local
+    
+    # Copy the rest of the application
+    COPY . .
+    
+    EXPOSE 8000
+    
+    # Using "exec" form for CMD is generally preferred
+    CMD ["sh", "-c", "python db/wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000"]
