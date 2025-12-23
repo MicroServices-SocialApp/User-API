@@ -1,12 +1,3 @@
-<<<<<<< Updated upstream
-from fastapi import FastAPI
-
-from router import user
-
-app = FastAPI()
-
-app.include_router(user.router)
-=======
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError, OperationalError
 from fastapi.exceptions import RequestValidationError
 from fastapi import FastAPI, Request, status
@@ -73,4 +64,3 @@ async def timeout_handler(request: Request, exc: TimeoutError) -> JSONResponse:
         status_code=status.HTTP_504_GATEWAY_TIMEOUT,
         content={"detail": "The database took too long to respond."}
     )
->>>>>>> Stashed changes
