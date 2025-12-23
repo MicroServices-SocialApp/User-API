@@ -1,10 +1,6 @@
-<<<<<<< Updated upstream
-from pydantic import BaseModel, Field
-=======
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_serializer
->>>>>>> Stashed changes
 
 
 class UserModel(BaseModel):
@@ -13,41 +9,28 @@ class UserModel(BaseModel):
         min_length=2,
         max_length=40,
         deprecated=False,
-<<<<<<< Updated upstream
-    )
-    email: str = Field(
-=======
         description="New username.",
         json_schema_extra={"example": "janedoe"}
     )
     email: EmailStr = Field(
->>>>>>> Stashed changes
         Ellipsis,
         min_length=5,
         max_length=60,
         deprecated=False,
-<<<<<<< Updated upstream
-=======
         description="New email.",
         json_schema_extra={"example": "email@example.com"}
->>>>>>> Stashed changes
     )
     password: str = Field(
         Ellipsis,
         min_length=1,
         max_length=70,
         deprecated=False,
-<<<<<<< Updated upstream
-=======
         description="New password. Will be re-hashed.",
         json_schema_extra={"example": "SecurePassword456!"}
->>>>>>> Stashed changes
     )
     
 #--------------------------------------------------------------------------
 
-<<<<<<< Updated upstream
-=======
 class UserPatchModel(BaseModel):
     username: Optional[str] = Field(
         default=None,
@@ -76,16 +59,10 @@ class UserPatchModel(BaseModel):
 
 #--------------------------------------------------------------------------
 
->>>>>>> Stashed changes
 class UserDisplay(BaseModel):
     id: int
     username: str
     email: str
-<<<<<<< Updated upstream
-
-    class ConfigDict:
-        from_attributes = True
-=======
     timestamp: datetime
     class ConfigDict:
         from_attributes = True
@@ -94,4 +71,3 @@ class UserDisplay(BaseModel):
     def format_timestamp(self, dt: datetime) -> str:
         # .strftime converts the datetime object to your specific string format
         return dt.strftime('%Y-%m-%dT%H:%M')
->>>>>>> Stashed changes
