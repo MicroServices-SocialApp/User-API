@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError, OperationalError
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from router import user
@@ -9,6 +10,16 @@ import logging
 
 app = FastAPI()
 app.include_router(user.router)
+
+# -----------------------------------------------------------------------------------------------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace "*" with your specific domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # -----------------------------------------------------------------------------------------------
 
