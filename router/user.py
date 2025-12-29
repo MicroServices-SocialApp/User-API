@@ -1,8 +1,10 @@
+from auth.oauth2 import get_current_user
 from db import db_user
 from typing import List
 from db.database import get_async_db
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio.session import AsyncSession
+from schemas.schemas_auth import UserAuth
 from schemas.schemas_user import UserModel, UserDisplay, UserPatchModel
 
 router = APIRouter(prefix="/user", tags=["user"])
@@ -49,7 +51,7 @@ async def create(request: UserModel, db: AsyncSession = Depends(get_async_db)):
     name='User_read_by_username',
     summary="Retrieve a user by their username",
     description="Fetch a specific user's details from the database using their unique username.",
-    response_model=List[UserDisplay],
+    response_model=UserDisplay,
     status_code=status.HTTP_200_OK,
     response_description="User details retrieved successfully",
     responses={
@@ -57,7 +59,7 @@ async def create(request: UserModel, db: AsyncSession = Depends(get_async_db)):
             "description": "SUCCESS - User found",
             "content": {
                 "application/json": {
-                    "example": [{"id": 1, "username": "diluc", "email": "diluc@example.com", 'timestamp': '2025-12-22T00:00:00'}]
+                    "example": {"id": 1, "username": "diluc", "email": "diluc@example.com", 'timestamp': '2025-12-22T00:00:00'}
                 }
             }
         },
@@ -121,8 +123,8 @@ async def read_all_users(db: AsyncSession = Depends(get_async_db)):
         404: {"description": "NOT FOUND - User ID not found"}
     }
 )
-async def update(id: int, request: UserModel, db: AsyncSession = Depends(get_async_db)):
-    user = await db_user.update(id, request, db)
+async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), current_user: UserAuth = Depends(get_current_user)):
+    user = await db_user.update(request, db, current_user)
     return user
 
 
@@ -149,8 +151,8 @@ async def update(id: int, request: UserModel, db: AsyncSession = Depends(get_asy
         }
     }
 )
-async def patch(id: int, request: UserPatchModel, db: AsyncSession = Depends(get_async_db)):
-    user = await db_user.patch(id, request, db)
+async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db), current_user: UserAuth = Depends(get_current_user)):
+    user = await db_user.patch(request, db, current_user)
     return user
 
 #--------------------------------------------------------------------------
@@ -178,6 +180,6 @@ async def patch(id: int, request: UserPatchModel, db: AsyncSession = Depends(get
         }
     }
 )
-async def delete(id: int, db: AsyncSession = Depends(get_async_db)):
-    await db_user.delete(id, db)
+async def delete(db: AsyncSession = Depends(get_async_db), current_user: UserAuth = Depends(get_current_user)):
+    await db_user.delete(db, current_user)
     return None
