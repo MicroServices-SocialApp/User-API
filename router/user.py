@@ -1,17 +1,28 @@
-from auth.oauth2 import get_current_user
-from db import db_user
-from typing import List
-from db.database import get_async_db
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio.session import AsyncSession
-from schemas.schemas_auth import UserAuth
 from schemas.schemas_user import UserModel, UserDisplay, UserPatchModel
+from fastapi import APIRouter, Depends, HTTPException, status, Header
+from sqlalchemy.ext.asyncio.session import AsyncSession
+from schemas.schemas_current_user import CurrentUser
+from schemas.schemas_auth import UserAuth
+from auth.oauth2 import get_current_user
+from db.database import get_async_db
+from typing import List
+from db import db_user
+import os
 
 router = APIRouter(prefix="/user", tags=["user"])
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+async def verify_internal_token(x_internal_token: str = Header(Ellipsis)):
+    if not SECRET_KEY:
+            raise ValueError("CRITICAL: SECRET_KEY environment variable is required.")
+    if x_internal_token != SECRET_KEY:
+        raise HTTPException(status_code=403, detail="Access denied: Internal only")
+    return x_internal_token
 
 @router.post(
     "/create",
+    include_in_schema=True,
     deprecated=False,
     name='User_Creation',
     summary="Create a new user",
@@ -47,11 +58,12 @@ async def create(request: UserModel, db: AsyncSession = Depends(get_async_db)):
 
 @router.get(
     "/read_user_by_username",
+    include_in_schema=False,
     deprecated=False,
     name='User_read_by_username',
     summary="Retrieve a user by their username",
     description="Fetch a specific user's details from the database using their unique username.",
-    response_model=UserDisplay,
+    response_model=UserAuth,
     status_code=status.HTTP_200_OK,
     response_description="User details retrieved successfully",
     responses={
@@ -66,7 +78,7 @@ async def create(request: UserModel, db: AsyncSession = Depends(get_async_db)):
         404: {"description": "NOT FOUND - Username does not exist"}
     }
 )
-async def read_user_by_username(username: str, db: AsyncSession = Depends(get_async_db)):
+async def read_user_by_username(username: str, db: AsyncSession = Depends(get_async_db), _ = Depends(verify_internal_token)):
     user = await db_user.read_user_by_username(username, db)
     return user
 
@@ -76,6 +88,7 @@ async def read_user_by_username(username: str, db: AsyncSession = Depends(get_as
 
 @router.get(
     "/read_all_users",
+    include_in_schema=True,
     deprecated=False,
     name='User_read_all',
     summary="Retrieve all registered users",
@@ -104,6 +117,7 @@ async def read_all_users(db: AsyncSession = Depends(get_async_db)):
 
 @router.put(
     "/update",
+    include_in_schema=True,
     deprecated=False,
     name='User_update',
     summary="Update an existing user",
@@ -123,7 +137,7 @@ async def read_all_users(db: AsyncSession = Depends(get_async_db)):
         404: {"description": "NOT FOUND - User ID not found"}
     }
 )
-async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), current_user: UserAuth = Depends(get_current_user)):
+async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), current_user: CurrentUser = Depends(get_current_user)):
     user = await db_user.update(request, db, current_user)
     return user
 
@@ -133,6 +147,7 @@ async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), c
 
 @router.patch(
     "/patch",
+    include_in_schema=True,
     deprecated=False,
     name='User_patch',
     summary="Partially update a user",
@@ -151,7 +166,7 @@ async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), c
         }
     }
 )
-async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db), current_user: UserAuth = Depends(get_current_user)):
+async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db), current_user: CurrentUser = Depends(get_current_user)):
     user = await db_user.patch(request, db, current_user)
     return user
 
@@ -159,6 +174,7 @@ async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db
 
 @router.delete(
     "/delete",
+    include_in_schema=True,
     deprecated=False,
     name='User_delete',
     summary="Delete a user from the database",
@@ -180,6 +196,6 @@ async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db
         }
     }
 )
-async def delete(db: AsyncSession = Depends(get_async_db), current_user: UserAuth = Depends(get_current_user)):
+async def delete(db: AsyncSession = Depends(get_async_db), current_user: CurrentUser = Depends(get_current_user)):
     await db_user.delete(db, current_user)
     return None
