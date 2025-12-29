@@ -1,6 +1,7 @@
 import asyncio
 from fastapi import HTTPException, status
 from db.models import DbUser
+from schemas.schemas_auth import UserAuth
 from schemas.schemas_user import UserModel, UserPatchModel
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from werkzeug.security import generate_password_hash
@@ -27,11 +28,20 @@ async def create(request: UserModel, db: AsyncSession):
 
 # --------------------------------------------------------------------------
 
+async def read_user_by_user_id(id: int, db: AsyncSession):
+
+    query = select(DbUser).where(DbUser.id == id)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    return user
+
+# --------------------------------------------------------------------------
+
 async def read_user_by_username(username: str, db: AsyncSession):
 
     query = select(DbUser).where(DbUser.username == username)
     result = await db.execute(query)
-    user = result.scalars().all()
+    user = result.scalar_one_or_none()
     return user
 
 # --------------------------------------------------------------------------
@@ -45,7 +55,7 @@ async def read_all_users(db: AsyncSession):
 
 # --------------------------------------------------------------------------
 
-async def update(id: int, request: UserModel, db: AsyncSession):
+async def update(request: UserModel, db: AsyncSession, current_user: UserAuth):
 
     new_hashed_password = await asyncio.to_thread(
         generate_password_hash,
@@ -74,8 +84,7 @@ async def update(id: int, request: UserModel, db: AsyncSession):
 
 # --------------------------------------------------------------------------
 
-
-async def patch(id: int, request: UserPatchModel, db: AsyncSession):
+async def patch(request: UserPatchModel, db: AsyncSession, current_user: UserAuth):
     # Convert request to a dictionary, keeping only the fields the user actually sent
     update_data = request.model_dump(exclude_unset=True)
 
@@ -104,12 +113,10 @@ async def patch(id: int, request: UserPatchModel, db: AsyncSession):
     await db.commit()
     return result.scalar_one_or_none()
 
-
 # --------------------------------------------------------------------------
 
-
-async def delete(id: int, db: AsyncSession):
-    query = sql_delete(DbUser).where(DbUser.id == id)
+async def delete(db: AsyncSession, current_user: UserAuth):
+    query = sql_delete(DbUser).where(DbUser.id == current_user.id)
     await db.execute(query)
     await db.commit()
     return None
