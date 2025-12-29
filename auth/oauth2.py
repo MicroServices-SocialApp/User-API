@@ -1,11 +1,10 @@
-# user_service/auth_deps.py
-import os
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from db.database import get_async_db
 from jose import JWTError, jwt
 from db import db_user
-from db.database import get_async_db
+import os
 
 # 1. Configuration
 SECRET_KEY = os.getenv("SECRET_KEY")

@@ -15,7 +15,7 @@ async def check_db():
         try:
             conn = await asyncpg.connect(uri)
             await conn.close()
-            print("✅ Database is ready!")
+            print("Database is ready!")
             sys.exit(0)
         except Exception as e:
             print(f"Waiting for database... ({retries} retries left) {e}")
