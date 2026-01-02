@@ -1,7 +1,6 @@
 from schemas.schemas_user import UserModel, UserDisplay, UserPatchModel
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from schemas.schemas_current_user import CurrentUser
 from schemas.schemas_auth import UserAuth
 from auth.oauth2 import get_current_user
 from db.database import get_async_db
@@ -137,8 +136,8 @@ async def read_all_users(db: AsyncSession = Depends(get_async_db)):
         404: {"description": "NOT FOUND - User ID not found"}
     }
 )
-async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), current_user: CurrentUser = Depends(get_current_user)):
-    user = await db_user.update(request, db, current_user)
+async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), current_user_id: int = Depends(get_current_user)):
+    user = await db_user.update(request, db, current_user_id)
     return user
 
 
@@ -166,8 +165,8 @@ async def update(request: UserModel, db: AsyncSession = Depends(get_async_db), c
         }
     }
 )
-async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db), current_user: CurrentUser = Depends(get_current_user)):
-    user = await db_user.patch(request, db, current_user)
+async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db), current_user_id: int = Depends(get_current_user)):
+    user = await db_user.patch(request, db, current_user_id)
     return user
 
 #--------------------------------------------------------------------------
@@ -196,6 +195,6 @@ async def patch(request: UserPatchModel, db: AsyncSession = Depends(get_async_db
         }
     }
 )
-async def delete(db: AsyncSession = Depends(get_async_db), current_user: CurrentUser = Depends(get_current_user)):
-    await db_user.delete(db, current_user)
+async def delete(db: AsyncSession = Depends(get_async_db), current_user_id: int = Depends(get_current_user)):
+    await db_user.delete(db, current_user_id)
     return None

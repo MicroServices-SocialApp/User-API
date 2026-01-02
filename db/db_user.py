@@ -2,7 +2,6 @@ from sqlalchemy import select, update as sql_update, delete as sql_delete
 from schemas.schemas_user import UserModel, UserPatchModel
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from werkzeug.security import generate_password_hash
-from schemas.schemas_current_user import CurrentUser
 from fastapi import HTTPException, status
 from db.models import DbUser
 import asyncio
@@ -26,7 +25,9 @@ async def create(request: UserModel, db: AsyncSession):
     await db.commit()
     return new_user
 
+
 # --------------------------------------------------------------------------
+
 
 async def read_user_by_user_id(id: int, db: AsyncSession):
 
@@ -35,7 +36,9 @@ async def read_user_by_user_id(id: int, db: AsyncSession):
     user = result.scalar_one_or_none()
     return user
 
+
 # --------------------------------------------------------------------------
+
 
 async def read_user_by_username(username: str, db: AsyncSession):
 
@@ -44,7 +47,9 @@ async def read_user_by_username(username: str, db: AsyncSession):
     user = result.scalar_one_or_none()
     return user
 
+
 # --------------------------------------------------------------------------
+
 
 async def read_all_users(db: AsyncSession):
 
@@ -53,9 +58,11 @@ async def read_all_users(db: AsyncSession):
     user = result.scalars().all()
     return user
 
+
 # --------------------------------------------------------------------------
 
-async def update(request: UserModel, db: AsyncSession, current_user: CurrentUser):
+
+async def update(request: UserModel, db: AsyncSession, current_user_id: int):
 
     new_hashed_password = await asyncio.to_thread(
         generate_password_hash,
@@ -66,7 +73,7 @@ async def update(request: UserModel, db: AsyncSession, current_user: CurrentUser
 
     query = (
         sql_update(DbUser)
-        .where(DbUser.id == current_user.id)
+        .where(DbUser.id == current_user_id)
         .values(
             username=request.username,
             email=request.email,
@@ -82,9 +89,11 @@ async def update(request: UserModel, db: AsyncSession, current_user: CurrentUser
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
+
 # --------------------------------------------------------------------------
 
-async def patch(request: UserPatchModel, db: AsyncSession, current_user: CurrentUser):
+
+async def patch(request: UserPatchModel, db: AsyncSession, current_user_id: int):
     # Convert request to a dictionary, keeping only the fields the user actually sent
     update_data = request.model_dump(exclude_unset=True)
 
@@ -104,7 +113,7 @@ async def patch(request: UserPatchModel, db: AsyncSession, current_user: Current
     # Execute the update
     query = (
         sql_update(DbUser)
-        .where(DbUser.id == current_user.id)
+        .where(DbUser.id == current_user_id)
         .values(**update_data)  # Unpack the dict into the update query
         .returning(DbUser)
     )
@@ -113,10 +122,12 @@ async def patch(request: UserPatchModel, db: AsyncSession, current_user: Current
     await db.commit()
     return result.scalar_one_or_none()
 
+
 # --------------------------------------------------------------------------
 
-async def delete(db: AsyncSession, current_user: CurrentUser):
-    query = sql_delete(DbUser).where(DbUser.id == current_user.id)
+
+async def delete(db: AsyncSession, current_user_id: int):
+    query = sql_delete(DbUser).where(DbUser.id == current_user_id)
     await db.execute(query)
     await db.commit()
     return None

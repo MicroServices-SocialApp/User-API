@@ -3,7 +3,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from db.database import get_async_db
 from jose import JWTError, jwt
-from db import db_user
 import os
 
 # 1. Configuration
@@ -42,5 +41,4 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         detail=f"Could not validate credentials: {e}",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    user = await db_user.read_user_by_user_id(int(user_id), db)
-    return user
+    return int(user_id)
