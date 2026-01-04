@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PAT_TOKEN_FOR_ALL_MICROSERVICES }}
-          repository: your-username/All_MS_Instagram
+          repository: MicroServices-SocialApp/All_MicroServices
           event-type: microservice_updated
