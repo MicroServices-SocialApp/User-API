@@ -10,7 +10,7 @@ jobs:
       - name: Send Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.PAT_TOKEN_FOR_ALL_MICROSERVICES }}
+          token: ${{ secrets.TOKEN_FOR_ALL_MICROSERVICES }}
           repository: MicroServices-SocialApp/All_MicroServices
           event-type: microservice_updated
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
