@@ -8,7 +8,7 @@ from typing import List
 from db import db_user
 import os
 
-router = APIRouter(prefix="/user", tags=["user"])
+router = APIRouter(tags=["user"])
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
