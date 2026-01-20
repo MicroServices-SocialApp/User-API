@@ -12,37 +12,47 @@ from sqlalchemy import MetaData
 # This tells SQLAlchemy exactly how to name constraints
 convention = {
     "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s", # Unique Constraint
+    "uq": "uq_%(table_name)s_%(column_0_name)s",  # Unique Constraint
     "ck": "ck_%(table_name)s_%(constraint_name)s",
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s"
+    "pk": "pk_%(table_name)s",
 }
+
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=convention)
 
+
 # ------------------------------------------------------------------------------------
 
 load_dotenv()
-DB_URL: str | None = os.getenv("DATABASE_URL") # DB_URL for local setup, DATABASE_URL for Docker
+DB_URL: str | None = os.getenv("DATABASE_URL")  # DB_URL for local setup, DATABASE_URL for Docker
 
 # ------------------------------------------------------------------------------------
 
-logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 if not DB_URL:
     raise ValueError("CRITICAL: DATABASE_URL environment variable is required.")
 
-engine: AsyncEngine = create_async_engine(DB_URL, echo=False)
+engine: AsyncEngine = create_async_engine(
+    DB_URL,
+    max_overflow=10,
+    pool_size=20,
+    pool_timeout=30,
+    pool_recycle=1800, 
+    echo=False,
+)
 
 # ------------------------------------------------------------------------------------
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
-    expire_on_commit=False
+    expire_on_commit=False,
 )
 
 # ------------------------------------------------------------------------------------
+
 
 async def get_async_db():
     async with AsyncSessionLocal() as db:
