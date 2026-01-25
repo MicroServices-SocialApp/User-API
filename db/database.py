@@ -37,7 +37,7 @@ if not DB_URL:
 engine: AsyncEngine = create_async_engine(
     DB_URL,
     max_overflow=10,
-    pool_size=20,
+    pool_size=10,
     pool_timeout=30,
     pool_recycle=1800, 
     echo=False,
