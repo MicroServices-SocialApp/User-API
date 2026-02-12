@@ -10,6 +10,7 @@ import logging
 
 app = FastAPI(root_path="/user")
 app.include_router(user.router)
+app.include_router(health.router)
 
 # -----------------------------------------------------------------------------------------------
 
