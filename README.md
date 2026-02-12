@@ -41,7 +41,7 @@ Here's what you can do with this API:
 
 3. CRUD Operations Implementation
 
-    Post: Developed endpoints for creating a Post and fetching Post details.
+    User: Developed endpoints for creating a User and fetching User details.
 
 
 4. Data Validation
@@ -87,9 +87,7 @@ It was about solving problems, learning new things, and improving my skills for 
 # How can it be improved?
 
 <ul>
-    <li>Plan out in advence the structure of the project. (Learned it the hard way.)</li>
-    <li>Add video uploads.</li>
-    <li>Add likes, re-tweet and views under posts.</li>
+    <li>add a way to log in with google.</li>
 </ul>
 
 
